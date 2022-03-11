@@ -97,7 +97,7 @@ def combine_ticker_polarity(column, total_sentiment, ticker, occurrences, polari
         total_sentiment.loc[total_sentiment['Ticker'] == ticker, total_sentiment.columns[column]] /= occurrences
         column += 1
 
-def analyze_data():
+def get_sentiment_analyis():
     tickers_data = get_posts()
     total_sentiment = pd.DataFrame(columns=['Ticker', 'Post Negative Polarity', 'Post Neutral Polarity', 'Post Positive Polarity',
     'Post Compound Polarity', 'News Negative Polarity', 'News Neutral Polarity', 'News Positive Polarity',
@@ -146,11 +146,11 @@ def analyze_data():
             column = 5
             combine_ticker_polarity(column, total_sentiment, ticker, occurrences, news_polarity)
         else:
-            row = {'Ticker': ticker, 'Post Negative Polarity': sum_post_polarity['neg'],
-            'Post Neutral Polarity': sum_post_polarity['neu'], 'Post Positive Polarity': sum_post_polarity['pos'], 
-            'Post Compound Polarity': sum_post_polarity['compound'], 'News Negative Polarity': news_polarity['neg'], 
-            'News Neutral Polarity': news_polarity['neu'], 'News Positive Polarity': news_polarity['pos'], 
-            'News Compound Polarity': news_polarity['compound'], 'Occurrences': occurrences}
+            row = {'Ticker': ticker, 'Posts Negative Polarity': round(sum_post_polarity['neg'], 2),
+            'Post Neutral Polarity': round(sum_post_polarity['neu'], 2), 'Post Positive Polarity': round(sum_post_polarity['pos'], 2), 
+            'Post Compound Polarity': round(sum_post_polarity['compound'], 2), 'News Negative Polarity': round(news_polarity['neg'], 2), 
+            'News Neutral Polarity': round(news_polarity['neu'], 2), 'News Positive Polarity': round(news_polarity['pos'], 2), 
+            'News Compound Polarity': round(news_polarity['compound'], 2), 'Occurrences': occurrences}
 
             total_sentiment = total_sentiment.append(row, ignore_index=True)
 
@@ -164,6 +164,3 @@ def get_chart_data(ticker):
     ticker_history = ticker_info.history(period='max')
     chart_df = pd.DataFrame(ticker_history)
     return chart_df
-
-if __name__ == '__main__':
-    print(analyze_data())
