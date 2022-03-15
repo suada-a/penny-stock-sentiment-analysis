@@ -1,6 +1,4 @@
-from dataclasses import dataclass
-from dash import Dash, html, dcc
-from matplotlib.pyplot import title
+from dash import Dash, dcc, html, Input, Output
 from penny_stock_scraper import *
 import plotly.graph_objects as go
 import pandas as pd
@@ -113,8 +111,34 @@ app.layout = html.Div(children=[
     dcc.Graph(
         id='news-graph',
         figure=news_fig
-    )
+    ),
+
+    html.Div([
+        dcc.Dropdown([ticker for ticker in df['Ticker']], df['Ticker'].loc[0], clearable=False,
+        id='ticker-dropdown', style = {'width': 120, 'font-family': 'Open Sans, verdana, arial, sans-serif'}),
+    ], style={'marginTop': 20, 'display': 'flex', 'justifyContent': 'center'}),
+
+    dcc.Graph(id='ticker-chart')
 ])
+
+@app.callback(
+    Output('ticker-chart', 'figure'),
+    [Input(component_id='ticker-dropdown', component_property='value')]
+)
+
+def create_graph(value):
+    chart_data = get_chart_data(value)
+
+    chart_layout = go.Layout(
+        title=f'{value} Historical Price Data',
+        title_x=0.5,
+        yaxis_title='Price',
+    )
+
+    fig = go.Figure(data=go.Scatter(x=chart_data.index, y=chart_data['Close'],
+    mode='lines'), layout=chart_layout)
+
+    return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
