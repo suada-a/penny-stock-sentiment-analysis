@@ -157,7 +157,6 @@ def get_sentiment_analyis():
 
     return total_sentiment
 
-
 def get_chart_data(ticker):
     ticker_info = yf.Ticker(ticker)
     ticker_history = ticker_info.history(period='max')
