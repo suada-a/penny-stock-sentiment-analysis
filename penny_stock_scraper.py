@@ -1,4 +1,3 @@
-from matplotlib.pyplot import polar
 import pandas as pd
 from config import reddit_key, reddit_secret, username, password
 import praw
@@ -66,7 +65,7 @@ def get_news(title_ticker):
 def get_posts():
     reddit = reddit_login()
     tickers = get_tickers()
-    tickers_data = []
+    tickers_data = pd.DataFrame(columns=['Ticker', 'Title', 'Content', 'Comments', 'News'])
     ticker_info = {}
 
     # Get posts with tickers in the title and add to a dataframe
@@ -86,12 +85,11 @@ def get_posts():
                 ticker_info = {'Ticker': post.get_ticker(), 'Title': post.get_title(), 'Content': post.get_content(), 
                 'Comments': post.get_comments(), 'News': news}
 
-                tickers_data.append(ticker_info)
+                tickers_data = tickers_data.append(ticker_info, ignore_index=True)
                 
     return tickers_data
 
 def combine_ticker_polarity(column, total_sentiment, ticker, occurrences, polarity):
-
     for key in polarity:
         total_sentiment.loc[total_sentiment['Ticker'] == ticker, total_sentiment.columns[column]] += polarity[key]
         total_sentiment.loc[total_sentiment['Ticker'] == ticker, total_sentiment.columns[column]] /= occurrences
@@ -104,6 +102,7 @@ def get_sentiment_analyis():
     'News Compound Polarity', 'Occurrences'])
     occurrences = 0
     
+    # Add additional words to VADER lexicon
     extra_words = {
         'undervalued': 3.0,
         'overvalued': -3.0,
@@ -117,18 +116,18 @@ def get_sentiment_analyis():
 
     analyzer = SentimentIntensityAnalyzer()
     analyzer.lexicon.update(extra_words)
-
-    for ticker_info in tickers_data:
-        ticker = ticker_info['Ticker']
-        title_polarity = analyzer.polarity_scores(ticker_info['Title'])
-        content_polarity = analyzer.polarity_scores(ticker_info['Content'])
-        comments_polarity = analyzer.polarity_scores(ticker_info['Comments'])
-        news_polarity = analyzer.polarity_scores(ticker_info['News'])
+    
+    for ticker_info in tickers_data.itertuples():
+        ticker = ticker_info.Ticker
+        title_polarity = analyzer.polarity_scores(ticker_info.Title)
+        content_polarity = analyzer.polarity_scores(ticker_info.Content)
+        comments_polarity = analyzer.polarity_scores(ticker_info.Comments)
+        news_polarity = analyzer.polarity_scores(ticker_info.News)
         post_polarity = {'Title Sentiment': title_polarity, 'Content Sentiment': content_polarity, 
         'Comments Sentiment': comments_polarity}
         occurrences += 1
 
-        #Combine polarity of post title, content and comments
+        # Combine polarity of post title, content and comments
         sum_post_polarity = {'neg': 0.0, 'neu': 0.0, 'pos': 0.0, 'compound': 0.0}
         for values in post_polarity.values():
             sum_post_polarity['neg'] += values['neg']
@@ -136,7 +135,7 @@ def get_sentiment_analyis():
             sum_post_polarity['pos'] += values['pos']
             sum_post_polarity['compound'] += values['compound']
 
-        # Combine duplicate tickers
+        # Combine and average duplicate ticker polarities
         if any(total_sentiment.Ticker == ticker):
             occurrences += 1
             column = 1
@@ -146,7 +145,7 @@ def get_sentiment_analyis():
             column = 5
             combine_ticker_polarity(column, total_sentiment, ticker, occurrences, news_polarity)
         else:
-            row = {'Ticker': ticker, 'Posts Negative Polarity': round(sum_post_polarity['neg'], 2),
+            row = {'Ticker': ticker, 'Post Negative Polarity': round(sum_post_polarity['neg'], 2),
             'Post Neutral Polarity': round(sum_post_polarity['neu'], 2), 'Post Positive Polarity': round(sum_post_polarity['pos'], 2), 
             'Post Compound Polarity': round(sum_post_polarity['compound'], 2), 'News Negative Polarity': round(news_polarity['neg'], 2), 
             'News Neutral Polarity': round(news_polarity['neu'], 2), 'News Positive Polarity': round(news_polarity['pos'], 2), 
