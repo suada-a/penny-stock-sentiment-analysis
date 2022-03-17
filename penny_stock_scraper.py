@@ -41,7 +41,7 @@ def reddit_login():
     return reddit
 
 def extract_ticker(string, tickers):
-    string = re.sub('[^\w\s]', '', string)
+    string = re.sub('[^a-zA-Z0-9 ]', '', string)
     string = string.split(" ")
 
     for word in string:
@@ -69,7 +69,7 @@ def get_posts():
     ticker_info = {}
 
     # Get posts with tickers in the title and add to a dataframe
-    for submission in reddit.subreddit('pennystocks').hot(limit=300):
+    for submission in reddit.subreddit('pennystocks').hot(limit=100):
         if(submission.upvote_ratio >= 0.65 and submission.num_comments > 1):
             title_ticker = (extract_ticker(submission.title, tickers))
 
