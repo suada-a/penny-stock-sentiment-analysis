@@ -30,5 +30,5 @@ password = 'your_password'
 - yfinance
 
 ## License
-The project is licensed under te MIT license - see [LICENSE.txt](./LICENSE.txt)
+The project is licensed under the MIT license - see [LICENSE.txt](./LICENSE.txt)
 
