@@ -127,13 +127,20 @@ def get_sentiment_analyis():
         'Comments Sentiment': comments_polarity}
         occurrences += 1
 
-        # Combine polarity of post title, content and comments
-        sum_post_polarity = {'neg': 0.0, 'neu': 0.0, 'pos': 0.0, 'compound': 0.0}
+        # Combine polarity of post title, content and comments and get average
+        sum_polarity = {'neg': 0.0, 'neu': 0.0, 'pos': 0.0, 'compound': 0.0}
+
+        count = 1
         for values in post_polarity.values():
-            sum_post_polarity['neg'] += values['neg']
-            sum_post_polarity['neu'] += values['neu']
-            sum_post_polarity['pos'] += values['pos']
-            sum_post_polarity['compound'] += values['compound']
+            sum_polarity['neg'] += values['neg']
+            sum_polarity['neg'] /= count
+            sum_polarity['neu'] += values['neu']
+            sum_polarity['neu'] /= count
+            sum_polarity['pos'] += values['pos']
+            sum_polarity['pos'] /= count
+            sum_polarity['compound'] += values['compound']
+            sum_polarity['compound'] /= count
+            count += 1
 
         # Combine and average duplicate ticker polarities
         if any(total_sentiment.Ticker == ticker):
@@ -141,13 +148,13 @@ def get_sentiment_analyis():
             column = 1
             total_sentiment.loc[total_sentiment['Ticker'] == ticker, 'Occurrences'] = occurrences
             
-            combine_ticker_polarity(column, total_sentiment, ticker, occurrences, sum_post_polarity)
+            combine_ticker_polarity(column, total_sentiment, ticker, occurrences, sum_polarity)
             column = 5
             combine_ticker_polarity(column, total_sentiment, ticker, occurrences, news_polarity)
         else:
-            row = {'Ticker': ticker, 'Post Negative Polarity': round(sum_post_polarity['neg'], 2),
-            'Post Neutral Polarity': round(sum_post_polarity['neu'], 2), 'Post Positive Polarity': round(sum_post_polarity['pos'], 2), 
-            'Post Compound Polarity': round(sum_post_polarity['compound'], 2), 'News Negative Polarity': round(news_polarity['neg'], 2), 
+            row = {'Ticker': ticker, 'Post Negative Polarity': round(sum_polarity['neg'], 2),
+            'Post Neutral Polarity': round(sum_polarity['neu'], 2), 'Post Positive Polarity': round(sum_polarity['pos'], 2), 
+            'Post Compound Polarity': round(sum_polarity['compound'], 2), 'News Negative Polarity': round(news_polarity['neg'], 2), 
             'News Neutral Polarity': round(news_polarity['neu'], 2), 'News Positive Polarity': round(news_polarity['pos'], 2), 
             'News Compound Polarity': round(news_polarity['compound'], 2), 'Occurrences': occurrences}
 

@@ -5,8 +5,8 @@ import pandas as pd
 
 app = Dash(__name__)
 
-# Get the top 5 stocks based on the 'Post Positive Polarity'
-df = pd.DataFrame(get_sentiment_analyis()).nlargest(5, 'Post Positive Polarity')
+# Get the top 5 stocks based on the 'Compound Polarity'
+df = pd.DataFrame(get_sentiment_analyis()).nlargest(5, 'Post Compound Polarity')
 df.reset_index(inplace=True)
 
 def posts_graph(df):
